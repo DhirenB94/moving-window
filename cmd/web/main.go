@@ -8,7 +8,8 @@ import (
 )
 
 func main() {
-	server := movingwindow.NewRequestServer(nil)
+	store := movingwindow.NewInMemDB()
+	server := movingwindow.NewRequestServer(store)
 	err := http.ListenAndServe(":5001", server)
 	if err != nil {
 		log.Fatal(err)
