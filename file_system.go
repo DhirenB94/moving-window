@@ -6,10 +6,10 @@ import (
 )
 
 type FileSystem struct {
-	dataSource io.Reader
+	dataSource io.ReadWriter
 }
 
-func NewFileSystem(dataSource io.Reader) *FileSystem {
+func NewFileSystem(dataSource io.ReadWriter) *FileSystem {
 	return &FileSystem{dataSource: dataSource}
 }
 
@@ -17,7 +17,14 @@ func (f *FileSystem) GetReqsInLastMin(reqSecond int) int {
 	return 0
 }
 func (f *FileSystem) AddReqToCount(reqSecond int) {
+	data, _ := f.GetAllReqs()
 
+	data = append(data, Data{
+		Second: reqSecond,
+		Count:  1,
+	})
+
+	json.NewEncoder(f.dataSource).Encode(data)
 }
 func (f *FileSystem) GetCurrentSecond() int {
 	return 0
