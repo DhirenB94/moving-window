@@ -8,8 +8,8 @@ import (
 )
 
 func main() {
-	handler := http.HandlerFunc(movingwindow.RequestServer)
-	err := http.ListenAndServe(":5001", handler)
+	server := movingwindow.NewRequestServer(nil)
+	err := http.ListenAndServe(":5001", server)
 	if err != nil {
 		log.Fatal(err)
 	}
