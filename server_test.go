@@ -66,9 +66,7 @@ func Test(t *testing.T) {
 		want := "1"
 		got := response.Body.String()
 
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
+		assertBody(t, got, want)
 	})
 	t.Run("gets a count of 0, given no requests in the last minute", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -89,9 +87,7 @@ func Test(t *testing.T) {
 		want := "0"
 		got := response.Body.String()
 
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
+		assertBody(t, got, want)
 	})
 	t.Run("adds one to the count for the current request", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -113,9 +109,7 @@ func Test(t *testing.T) {
 		want := "01" //0, 1
 		got := response.Body.String()
 
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
+		assertBody(t, got, want)
 	})
 	t.Run("only get the count for requests within the last minute", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -143,9 +137,7 @@ func Test(t *testing.T) {
 		want := "2"
 		got := response.Body.String()
 
-		if got != want {
-			t.Errorf("got %q, want %q", got, want)
-		}
+		assertBody(t, got, want)
 	})
 }
 
@@ -153,4 +145,18 @@ func timeParser(input string) time.Time {
 	layout := "2006-01-02 15:04:05"
 	parsedTime, _ := time.Parse(layout, input)
 	return parsedTime
+}
+
+func assertBody(t testing.TB, got, want string) {
+	t.Helper()
+	if got != want {
+		t.Errorf("got %q, want %q", got, want)
+	}
+}
+
+func assertStatus(t testing.TB, got, want int) {
+	t.Helper()
+	if got != want {
+		t.Errorf("did not get correct status, got %d, want %d", got, want)
+	}
 }
