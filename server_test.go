@@ -63,6 +63,7 @@ func TestServer(t *testing.T) {
 		got := getReqsInLastMinFromResponse(t, response.Body)
 		assertEqual(t, got.RequestsInLastMin, 1)
 		assertStatus(t, response.Code, http.StatusOK)
+		assertContentType(t, response, movingwindow.JSONContentType)
 	})
 	t.Run("gets a count of 0, given no requests in the last minute", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -80,6 +81,7 @@ func TestServer(t *testing.T) {
 		got := getReqsInLastMinFromResponse(t, response.Body)
 		assertEqual(t, got.RequestsInLastMin, 0)
 		assertStatus(t, response.Code, http.StatusOK)
+		assertContentType(t, response, movingwindow.JSONContentType)
 	})
 	t.Run("adds one to the count for the current request", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -96,11 +98,13 @@ func TestServer(t *testing.T) {
 		got := getReqsInLastMinFromResponse(t, response.Body)
 		assertEqual(t, got.RequestsInLastMin, 0)
 		assertStatus(t, response.Code, http.StatusOK)
+		assertContentType(t, response, movingwindow.JSONContentType)
 
 		server.ServeHTTP(response, request)
 		got2 := getReqsInLastMinFromResponse(t, response.Body)
 		assertEqual(t, got2.RequestsInLastMin, 1)
 		assertStatus(t, response.Code, http.StatusOK)
+		assertContentType(t, response, movingwindow.JSONContentType)
 
 	})
 	t.Run("only get the count for requests within the last minute", func(t *testing.T) {
@@ -127,6 +131,7 @@ func TestServer(t *testing.T) {
 		got := getReqsInLastMinFromResponse(t, response.Body)
 		assertEqual(t, got.RequestsInLastMin, 2)
 		assertStatus(t, response.Code, http.StatusOK)
+		assertContentType(t, response, movingwindow.JSONContentType)
 	})
 }
 
@@ -151,4 +156,10 @@ func getReqsInLastMinFromResponse(t testing.TB, body io.Reader) (reqsInLastMin m
 		t.Fatalf("Unable to parse response from server %q into ReqsInLastMin, '%v'", body, err)
 	}
 	return reqsInLastMin
+}
+func assertContentType(t testing.TB, response *httptest.ResponseRecorder, want string) {
+	t.Helper()
+	if response.Result().Header.Get("content-type") != want {
+		t.Errorf("response did not have content-type of %s, got %v", want, response.Result().Header)
+	}
 }

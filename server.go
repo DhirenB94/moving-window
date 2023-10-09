@@ -5,6 +5,8 @@ import (
 	"net/http"
 )
 
+const JSONContentType = "application/json"
+
 type RequestsStore interface {
 	GetReqsInLastMin(reqSecond int) int
 	AddReqToCount(reqSecond int)
@@ -29,6 +31,8 @@ func NewRequestServer(reqStore RequestsStore) *RequestsServer {
 }
 
 func (rs *RequestsServer) reqCountsHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("content-type", JSONContentType)
+
 	currentSecond := rs.reqStore.GetCurrentSecond()
 	reqsInLastMin := rs.reqStore.GetReqsInLastMin(currentSecond)
 	rs.reqStore.AddReqToCount(currentSecond)
@@ -37,4 +41,3 @@ func (rs *RequestsServer) reqCountsHandler(w http.ResponseWriter, r *http.Reques
 		RequestsInLastMin: reqsInLastMin,
 	})
 }
-
