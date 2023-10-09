@@ -16,7 +16,9 @@ func TestFileServer(t *testing.T) {
 
 		store := movingwindow.NewFileSystem(data)
 
-		got := store.GetAllReqs()
+		got, err := store.GetAllReqs()
+		assertNoError(t, err)
+
 		want := []movingwindow.Data{
 			{Second: 1000, Count: 1},
 			{Second: 1030, Count: 1},
@@ -29,5 +31,11 @@ func assertData(t testing.TB, got, want []movingwindow.Data) {
 	t.Helper()
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("got %v, want %v", got, want)
+	}
+}
+func assertNoError(t testing.TB, err error) {
+	t.Helper()
+	if err != nil {
+		t.Fatalf("didn't expect an error but got one, %v", err)
 	}
 }
