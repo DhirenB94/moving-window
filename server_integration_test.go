@@ -17,13 +17,19 @@ func TestRetrieveRequestCountAndAddCurrentRequest(t *testing.T) {
 	response := httptest.NewRecorder()
 
 	server.ServeHTTP(response, request)
-	assertBody(t, response.Body.String(), "0")
+	got := getReqsInLastMinFromResponse(t, response.Body)
+	assertEqual(t, got.RequestsInLastMin, 0)
+	assertStatus(t, response.Code, http.StatusOK)
 
 	server.ServeHTTP(response, request)
-	assertBody(t, response.Body.String(), "01")
+	got2 := getReqsInLastMinFromResponse(t, response.Body)
+	assertEqual(t, got2.RequestsInLastMin, 1)
+	assertStatus(t, response.Code, http.StatusOK)
 
 	server.ServeHTTP(response, request)
-	assertBody(t, response.Body.String(), "012")
+	got3 := getReqsInLastMinFromResponse(t, response.Body)
+	assertEqual(t, got3.RequestsInLastMin, 2)
+	assertStatus(t, response.Code, http.StatusOK)
 
 	assertStatus(t, response.Code, http.StatusOK)
 }

@@ -1,7 +1,7 @@
 package movingwindow
 
 import (
-	"fmt"
+	"encoding/json"
 	"net/http"
 )
 
@@ -31,6 +31,10 @@ func NewRequestServer(reqStore RequestsStore) *RequestsServer {
 func (rs *RequestsServer) reqCountsHandler(w http.ResponseWriter, r *http.Request) {
 	currentSecond := rs.reqStore.GetCurrentSecond()
 	reqsInLastMin := rs.reqStore.GetReqsInLastMin(currentSecond)
-	fmt.Fprint(w, reqsInLastMin)
 	rs.reqStore.AddReqToCount(currentSecond)
+
+	json.NewEncoder(w).Encode(ReqsInLastMin{
+		RequestsInLastMin: reqsInLastMin,
+	})
 }
+

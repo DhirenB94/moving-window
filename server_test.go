@@ -1,6 +1,8 @@
 package movingwindow_test
 
 import (
+	"encoding/json"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -58,10 +60,9 @@ func TestServer(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		want := "1"
-		got := response.Body.String()
-
-		assertBody(t, got, want)
+		got := getReqsInLastMinFromResponse(t, response.Body)
+		assertEqual(t, got.RequestsInLastMin, 1)
+		assertStatus(t, response.Code, http.StatusOK)
 	})
 	t.Run("gets a count of 0, given no requests in the last minute", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -76,10 +77,9 @@ func TestServer(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		want := "0"
-		got := response.Body.String()
-
-		assertBody(t, got, want)
+		got := getReqsInLastMinFromResponse(t, response.Body)
+		assertEqual(t, got.RequestsInLastMin, 0)
+		assertStatus(t, response.Code, http.StatusOK)
 	})
 	t.Run("adds one to the count for the current request", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -93,12 +93,15 @@ func TestServer(t *testing.T) {
 		server := movingwindow.NewRequestServer(reqStore)
 
 		server.ServeHTTP(response, request)
+		got := getReqsInLastMinFromResponse(t, response.Body)
+		assertEqual(t, got.RequestsInLastMin, 0)
+		assertStatus(t, response.Code, http.StatusOK)
+
 		server.ServeHTTP(response, request)
+		got2 := getReqsInLastMinFromResponse(t, response.Body)
+		assertEqual(t, got2.RequestsInLastMin, 1)
+		assertStatus(t, response.Code, http.StatusOK)
 
-		want := "01" //0, 1
-		got := response.Body.String()
-
-		assertBody(t, got, want)
 	})
 	t.Run("only get the count for requests within the last minute", func(t *testing.T) {
 		request, _ := http.NewRequest(http.MethodGet, "/", nil)
@@ -121,17 +124,16 @@ func TestServer(t *testing.T) {
 
 		server.ServeHTTP(response, request)
 
-		want := "2"
-		got := response.Body.String()
-
-		assertBody(t, got, want)
+		got := getReqsInLastMinFromResponse(t, response.Body)
+		assertEqual(t, got.RequestsInLastMin, 2)
+		assertStatus(t, response.Code, http.StatusOK)
 	})
 }
 
-func assertBody(t testing.TB, got, want string) {
+func assertEqual(t testing.TB, got, want int) {
 	t.Helper()
 	if got != want {
-		t.Errorf("got %q, want %q", got, want)
+		t.Errorf("got %v, want %v", got, want)
 	}
 }
 
@@ -140,4 +142,13 @@ func assertStatus(t testing.TB, got, want int) {
 	if got != want {
 		t.Errorf("did not get correct status, got %d, want %d", got, want)
 	}
+}
+
+func getReqsInLastMinFromResponse(t testing.TB, body io.Reader) (reqsInLastMin movingwindow.ReqsInLastMin) {
+	t.Helper()
+	err := json.NewDecoder(body).Decode(&reqsInLastMin)
+	if err != nil {
+		t.Fatalf("Unable to parse response from server %q into ReqsInLastMin, '%v'", body, err)
+	}
+	return reqsInLastMin
 }
