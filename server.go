@@ -7,8 +7,9 @@ import (
 )
 
 type RequestsStore interface {
-	GetReqsInLastMin(reqTime time.Time)int
+	GetReqsInLastMin(reqTime time.Time) int
 	AddReqToCount(reqTime time.Time)
+	GetCurrentTime() time.Time
 }
 
 type RequestsServer struct {
@@ -22,7 +23,7 @@ func NewRequestServer(reqStore RequestsStore) *RequestsServer {
 }
 
 func (rs *RequestsServer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	currentTime := time.Now()
+	currentTime := rs.reqStore.GetCurrentTime()
 	reqsInLastMin := rs.reqStore.GetReqsInLastMin(currentTime)
 	fmt.Fprint(w, reqsInLastMin)
 	rs.reqStore.AddReqToCount(currentTime)
