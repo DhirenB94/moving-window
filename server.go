@@ -3,13 +3,12 @@ package movingwindow
 import (
 	"fmt"
 	"net/http"
-	"time"
 )
 
 type RequestsStore interface {
-	GetReqsInLastMin(reqTime time.Time) int
-	AddReqToCount(reqTime time.Time)
-	GetCurrentTime() time.Time
+	GetReqsInLastMin(reqSecond int) int
+	AddReqToCount(reqSecond int)
+	GetCurrentSecond() int
 }
 
 type RequestsServer struct {
@@ -30,8 +29,8 @@ func NewRequestServer(reqStore RequestsStore) *RequestsServer {
 }
 
 func (rs *RequestsServer) reqCountsHandler(w http.ResponseWriter, r *http.Request) {
-	currentTime := rs.reqStore.GetCurrentTime()
-	reqsInLastMin := rs.reqStore.GetReqsInLastMin(currentTime)
+	currentSecond := rs.reqStore.GetCurrentSecond()
+	reqsInLastMin := rs.reqStore.GetReqsInLastMin(currentSecond)
 	fmt.Fprint(w, reqsInLastMin)
-	rs.reqStore.AddReqToCount(currentTime)
+	rs.reqStore.AddReqToCount(currentSecond)
 }

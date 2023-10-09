@@ -6,44 +6,44 @@ import (
 )
 
 type InMemDB struct {
-	requestCount map[time.Time]int
-	mutex sync.Mutex
+	reqSecondCount map[int]int
+	mutex          sync.Mutex
 }
 
 func NewInMemDB() *InMemDB {
 	return &InMemDB{
-		requestCount: map[time.Time]int{
-			{}: 0,
+		reqSecondCount: map[int]int{
+			0: 0,
 		},
 		mutex: sync.Mutex{},
 	}
 }
 
-func (im *InMemDB) GetReqsInLastMin(reqTime time.Time) int {
-		im.mutex.Lock()
-		defer im.mutex.Unlock()
-	
-		requestsInLastMin := 0
-	
-		//get the begining of the last minute
-		lastMinute := reqTime.Add(-61 * time.Second)
-	
-		// Iterate through the requestCount map and if the time is within the last minute, sum those values
-		for t, count := range im.requestCount {
-			if t.After(lastMinute) {
-				requestsInLastMin += count
-			}
+func (im *InMemDB) GetReqsInLastMin(reqSecond int) int {
+	im.mutex.Lock()
+	defer im.mutex.Unlock()
+
+	requestsInLastMin := 0
+	// get the begining of the last minute
+	oneMinAgo := reqSecond - 60
+
+	// Iterate through the requestCount map and if the time is after the last minute starts, sum those values
+	for second, count := range im.reqSecondCount {
+		if second >= oneMinAgo {
+			requestsInLastMin += count
 		}
-		return requestsInLastMin
+	}
+
+	return requestsInLastMin
 }
 
-func (im *InMemDB) AddReqToCount(reqTime time.Time) {
-		//Update the requestCount map for the current second
-		im.mutex.Lock()
-		defer im.mutex.Unlock()
-		im.requestCount[reqTime]++
+func (im *InMemDB) AddReqToCount(reqSecond int) {
+	//Update the requestCount map for the current second
+	im.mutex.Lock()
+	defer im.mutex.Unlock()
+	im.reqSecondCount[reqSecond]++
 }
 
-func (im *InMemDB) GetCurrentTime() time.Time {
-	return time.Now()
+func (im *InMemDB) GetCurrentSecond() int {
+	return int(time.Now().Unix())
 }
