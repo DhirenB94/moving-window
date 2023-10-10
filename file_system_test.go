@@ -18,8 +18,7 @@ func TestFileServer(t *testing.T) {
 
 		store := movingwindow.NewFileSystem(&buf)
 
-		got, err := store.GetAllReqs()
-		assertNoError(t, err)
+		got := store.GetAllReqs()
 
 		want := []movingwindow.Data{
 			{Second: 1000, Count: 1},
@@ -41,8 +40,7 @@ func TestFileServer(t *testing.T) {
 		store.AddReqToCount(TestCurrentSecond)
 
 		//check new data has been written successfully
-		got, err := store.GetAllReqs()
-		assertNoError(t, err)
+		got := store.GetAllReqs()
 
 		want := []movingwindow.Data{
 			{Second: 930, Count: 1},

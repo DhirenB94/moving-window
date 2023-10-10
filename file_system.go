@@ -17,7 +17,7 @@ func (f *FileSystem) GetReqsInLastMin(reqSecond int) int {
 	return 0
 }
 func (f *FileSystem) AddReqToCount(reqSecond int) {
-	data, _ := f.GetAllReqs()
+	data := f.GetAllReqs()
 
 	data = append(data, Data{
 		Second: reqSecond,
@@ -29,11 +29,7 @@ func (f *FileSystem) AddReqToCount(reqSecond int) {
 func (f *FileSystem) GetCurrentSecond() int {
 	return 0
 }
-func (f *FileSystem) GetAllReqs() ([]Data, error) {
-	var data []Data
-	err := json.NewDecoder(f.dataSource).Decode(&data)
-	if err != nil {
-		return nil, err
-	}
-	return data, nil
+func (f *FileSystem) GetAllReqs() []Data {
+	data, _ := NewData(f.dataSource)
+	return data
 }
