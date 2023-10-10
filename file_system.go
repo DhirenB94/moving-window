@@ -2,14 +2,14 @@ package movingwindow
 
 import (
 	"encoding/json"
-	"io"
+	"os"
 )
 
 type FileSystem struct {
-	dataSource io.ReadWriter
+	dataSource *os.File
 }
 
-func NewFileSystem(dataSource io.ReadWriter) *FileSystem {
+func NewFileSystem(dataSource *os.File) *FileSystem {
 	return &FileSystem{dataSource: dataSource}
 }
 
@@ -24,12 +24,14 @@ func (f *FileSystem) AddReqToCount(reqSecond int) {
 		Count:  1,
 	})
 
+	f.dataSource.Seek(0, 0)
 	json.NewEncoder(f.dataSource).Encode(data)
 }
 func (f *FileSystem) GetCurrentSecond() int {
 	return 0
 }
 func (f *FileSystem) GetAllReqs() []Data {
+	f.dataSource.Seek(0, 0)
 	data, _ := NewData(f.dataSource)
 	return data
 }
