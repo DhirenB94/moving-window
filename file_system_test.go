@@ -4,6 +4,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	movingwindow "dhiren.brahmbhatt/moving-window"
 )
@@ -66,6 +67,20 @@ func TestFileServer(t *testing.T) {
 			{Second: 1000, Count: 2},
 		}
 		assertData(t, got, want)
+	})
+	t.Run("get the correct second", func(t *testing.T) {
+		tempFile := createTempFile(t, `[
+			{"second":1000, "count":1},
+			{"second":1030, "count":1}]`)
+
+		defer closeTempFile(tempFile)
+
+		store := movingwindow.NewFileSystem(tempFile)
+
+		storeCurrentSecond := store.GetCurrentSecond()
+		currentSecond := int(time.Now().Unix())
+
+		assertEqual(t, storeCurrentSecond, currentSecond)
 	})
 }
 

@@ -3,6 +3,7 @@ package movingwindow
 import (
 	"encoding/json"
 	"os"
+	"time"
 )
 
 type FileSystem struct {
@@ -34,7 +35,8 @@ func (f *FileSystem) AddReqToCount(reqSecond int) {
 }
 
 func (f *FileSystem) GetCurrentSecond() int {
-	return 0
+	currentSecond := int(time.Now().Unix())
+	return currentSecond
 }
 func (f *FileSystem) GetAllReqs() AllData {
 	f.dataSource.Seek(0, 0)
