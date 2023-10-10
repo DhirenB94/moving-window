@@ -2,6 +2,7 @@ package movingwindow_test
 
 import (
 	"bytes"
+	"os"
 	"reflect"
 	"testing"
 
@@ -62,4 +63,21 @@ func assertNoError(t testing.TB, err error) {
 	if err != nil {
 		t.Fatalf("didn't expect an error but got one, %v", err)
 	}
+}
+
+func createTempFile(t testing.TB, initialData string) *os.File {
+	t.Helper()
+
+	tempFile, err := os.CreateTemp("", "db")
+	if err != nil {
+		t.Fatalf("could not create temp file %v", err)
+	}
+	tempFile.Write([]byte(initialData))
+
+	return tempFile
+}
+
+func closeTempFile(tempFile *os.File) {
+	tempFile.Close()
+	os.Remove(tempFile.Name())
 }
