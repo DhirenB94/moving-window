@@ -14,6 +14,17 @@ type Data struct {
 	Count  int `json:"count"`
 }
 
+type AllData []Data
+
+func (a AllData) Find(reqSecond int) *Data {
+	for k, v := range a {
+		if v.Second == reqSecond {
+			return &a[k]
+		}
+	}
+	return nil
+}
+
 func NewData(reader io.Reader) ([]Data, error) {
 	var data []Data
 	err := json.NewDecoder(reader).Decode(&data)

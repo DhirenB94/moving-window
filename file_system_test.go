@@ -9,7 +9,7 @@ import (
 )
 
 func TestFileServer(t *testing.T) {
-	t.Run("read data form a reader correctly", func(t *testing.T) {
+	t.Run("read data form a file correctly", func(t *testing.T) {
 		tempFile := createTempFile(t, `[
 			{"second":1000, "count":1},
 			{"second":1030, "count":1}]`)
@@ -26,7 +26,7 @@ func TestFileServer(t *testing.T) {
 		}
 		assertData(t, got, want)
 	})
-	t.Run("add data to a writer correctly", func(t *testing.T) {
+	t.Run("add count for current request second, when it does not already exist", func(t *testing.T) {
 		tempFile := createTempFile(t, `[
 			{"second":930, "count":1},
 			{"second":960, "count":1}]`)
@@ -44,6 +44,26 @@ func TestFileServer(t *testing.T) {
 			{Second: 930, Count: 1},
 			{Second: 960, Count: 1},
 			{Second: 1000, Count: 1},
+		}
+		assertData(t, got, want)
+	})
+	t.Run("add count for current request second, when it does exist", func(t *testing.T) {
+		tempFile := createTempFile(t, `[
+			{"second":930, "count":1},
+			{"second":1000, "count":1}]`)
+		defer closeTempFile(tempFile)
+
+		store := movingwindow.NewFileSystem(tempFile)
+
+		//add new data
+		store.AddReqToCount(TestCurrentSecond)
+
+		//check new data has been written successfully
+		got := store.GetAllReqs()
+
+		want := []movingwindow.Data{
+			{Second: 930, Count: 1},
+			{Second: 1000, Count: 2},
 		}
 		assertData(t, got, want)
 	})
