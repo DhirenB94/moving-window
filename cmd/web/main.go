@@ -16,7 +16,10 @@ func main() {
 		log.Fatalf("unable to open file %s, %v", fileName, err)
 	}
 
-	store := movingwindow.NewFileSystem(file)
+	store, err := movingwindow.NewFileSystem(file)
+	if err != nil {
+		log.Fatalf("unable to create file system %v", err)
+	}
 	server := movingwindow.NewRequestServer(store)
 
 	err = http.ListenAndServe(":5001", server)

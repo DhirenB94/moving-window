@@ -17,7 +17,8 @@ func TestFileServer(t *testing.T) {
 
 		defer closeTempFile(tempFile)
 
-		store := movingwindow.NewFileSystem(tempFile)
+		store, err := movingwindow.NewFileSystem(tempFile)
+		assertNoError(t, err)
 
 		got := store.GetAllReqs()
 
@@ -33,7 +34,8 @@ func TestFileServer(t *testing.T) {
 			{"second":960, "count":1}]`)
 		defer closeTempFile(tempFile)
 
-		store := movingwindow.NewFileSystem(tempFile)
+		store, err := movingwindow.NewFileSystem(tempFile)
+		assertNoError(t, err)
 
 		//add new data
 		store.AddReqToCount(TestCurrentSecond)
@@ -54,7 +56,8 @@ func TestFileServer(t *testing.T) {
 			{"second":1000, "count":1}]`)
 		defer closeTempFile(tempFile)
 
-		store := movingwindow.NewFileSystem(tempFile)
+		store, err := movingwindow.NewFileSystem(tempFile)
+		assertNoError(t, err)
 
 		//add new data
 		store.AddReqToCount(TestCurrentSecond)
@@ -75,7 +78,8 @@ func TestFileServer(t *testing.T) {
 
 		defer closeTempFile(tempFile)
 
-		store := movingwindow.NewFileSystem(tempFile)
+		store, err := movingwindow.NewFileSystem(tempFile)
+		assertNoError(t, err)
 
 		storeCurrentSecond := store.GetCurrentSecond()
 		currentSecond := int(time.Now().Unix())
@@ -88,10 +92,11 @@ func TestFileServer(t *testing.T) {
 		sixtySecondsAgo := currentSecond - 60
 		ninetySecondsAgo := currentSecond - 90
 
-		tempFile := createTempFile(t, "")
+		tempFile := createTempFile(t, `[]`)
 		defer closeTempFile(tempFile)
 
-		store := movingwindow.NewFileSystem(tempFile)
+		store, err := movingwindow.NewFileSystem(tempFile)
+		assertNoError(t, err)
 
 		//add entires
 		store.AddReqToCount(currentSecond)

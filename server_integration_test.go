@@ -10,10 +10,11 @@ import (
 )
 
 func TestRetrieveRequestCountAndAddCurrentRequest(t *testing.T) {
-	tempFile := createTempFile(t, "")
+	tempFile := createTempFile(t, `[]`)
 	defer closeTempFile(tempFile)
 
-	store := movingwindow.NewFileSystem(tempFile)
+	store, err := movingwindow.NewFileSystem(tempFile)
+	assertNoError(t, err)
 
 	server := movingwindow.NewRequestServer(store)
 

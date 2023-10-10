@@ -2,6 +2,7 @@ package movingwindow
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"time"
 )
@@ -11,13 +12,16 @@ type FileSystem struct {
 	data       AllData
 }
 
-func NewFileSystem(dataSource *os.File) *FileSystem {
+func NewFileSystem(dataSource *os.File) (*FileSystem, error) {
 	dataSource.Seek(0, 0)
-	data, _ := NewData(dataSource)
+	data, err := NewData(dataSource)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load data from the file %s, %v", dataSource.Name(), err)
+	}
 	return &FileSystem{
 		dataSource: dataSource,
 		data:       data,
-	}
+	}, nil
 }
 
 func (f *FileSystem) GetReqsInLastMin(reqSecond int) int {
