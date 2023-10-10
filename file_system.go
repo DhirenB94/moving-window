@@ -8,20 +8,36 @@ import (
 )
 
 type FileSystem struct {
-	dataSource *os.File
-	data       AllData
+	file *os.File
+	data AllData
 }
 
-func NewFileSystem(dataSource *os.File) (*FileSystem, error) {
-	dataSource.Seek(0, 0)
-	data, err := NewData(dataSource)
+func NewFileSystem(file *os.File) (*FileSystem, error) {
+	err := initialiseFile(file)
 	if err != nil {
-		return nil, fmt.Errorf("unable to load data from the file %s, %v", dataSource.Name(), err)
+		return nil, fmt.Errorf("unable to initialise file %s, %v", file.Name(), err)
+	}
+	data, err := NewData(file)
+	if err != nil {
+		return nil, fmt.Errorf("unable to load data from the file %s, %v", file.Name(), err)
 	}
 	return &FileSystem{
-		dataSource: dataSource,
-		data:       data,
+		file: file,
+		data: data,
 	}, nil
+}
+
+func initialiseFile(file *os.File) error {
+	file.Seek(0, 0)
+	stats, err := file.Stat()
+	if err != nil {
+		return fmt.Errorf("problem getting stats from file %s, %v", file.Name(), err)
+	}
+	if stats.Size() == 0 {
+		file.Write([]byte("[]"))
+		file.Seek(0, 0)
+	}
+	return nil
 }
 
 func (f *FileSystem) GetReqsInLastMin(reqSecond int) int {
@@ -49,8 +65,8 @@ func (f *FileSystem) AddReqToCount(reqSecond int) {
 		})
 	}
 
-	f.dataSource.Seek(0, 0)
-	json.NewEncoder(f.dataSource).Encode(f.data)
+	f.file.Seek(0, 0)
+	json.NewEncoder(f.file).Encode(f.data)
 }
 
 func (f *FileSystem) GetCurrentSecond() int {

@@ -10,6 +10,14 @@ import (
 )
 
 func TestFileServer(t *testing.T) {
+	t.Run("works with an empty file", func(t *testing.T) {
+		tempFile := createTempFile(t, "")
+
+		defer closeTempFile(tempFile)
+
+		_, err := movingwindow.NewFileSystem(tempFile)
+		assertNoError(t, err)
+	})
 	t.Run("read data form a file correctly", func(t *testing.T) {
 		tempFile := createTempFile(t, `[
 			{"second":1000, "count":1},
@@ -92,7 +100,7 @@ func TestFileServer(t *testing.T) {
 		sixtySecondsAgo := currentSecond - 60
 		ninetySecondsAgo := currentSecond - 90
 
-		tempFile := createTempFile(t, `[]`)
+		tempFile := createTempFile(t, "")
 		defer closeTempFile(tempFile)
 
 		store, err := movingwindow.NewFileSystem(tempFile)
