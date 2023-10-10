@@ -8,14 +8,20 @@ import (
 
 type FileSystem struct {
 	dataSource *os.File
+	data       AllData
 }
 
 func NewFileSystem(dataSource *os.File) *FileSystem {
-	return &FileSystem{dataSource: dataSource}
+	dataSource.Seek(0, 0)
+	data, _ := NewData(dataSource)
+	return &FileSystem{
+		dataSource: dataSource,
+		data:       data,
+	}
 }
 
 func (f *FileSystem) GetReqsInLastMin(reqSecond int) int {
-	data := f.GetAllReqs()
+	data := f.data
 
 	requestsinlastmin := 0
 	oneMinAgo := reqSecond - 60
@@ -28,20 +34,19 @@ func (f *FileSystem) GetReqsInLastMin(reqSecond int) int {
 	return requestsinlastmin
 }
 func (f *FileSystem) AddReqToCount(reqSecond int) {
-	data := f.GetAllReqs()
-	foundReq := data.Find(reqSecond)
+	foundReq := f.data.Find(reqSecond)
 
 	if foundReq != nil {
 		foundReq.Count++
 	} else {
-		data = append(data, Data{
+		f.data = append(f.data, Data{
 			Second: reqSecond,
 			Count:  1,
 		})
 	}
 
 	f.dataSource.Seek(0, 0)
-	json.NewEncoder(f.dataSource).Encode(data)
+	json.NewEncoder(f.dataSource).Encode(f.data)
 }
 
 func (f *FileSystem) GetCurrentSecond() int {
@@ -49,7 +54,5 @@ func (f *FileSystem) GetCurrentSecond() int {
 	return currentSecond
 }
 func (f *FileSystem) GetAllReqs() AllData {
-	f.dataSource.Seek(0, 0)
-	data, _ := NewData(f.dataSource)
-	return data
+	return f.data
 }
