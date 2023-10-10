@@ -15,7 +15,17 @@ func NewFileSystem(dataSource *os.File) *FileSystem {
 }
 
 func (f *FileSystem) GetReqsInLastMin(reqSecond int) int {
-	return 0
+	data := f.GetAllReqs()
+
+	requestsinlastmin := 0
+	oneMinAgo := reqSecond - 60
+
+	for _, v := range data {
+		if v.Second >= oneMinAgo && v.Second < reqSecond {
+			requestsinlastmin += v.Count
+		}
+	}
+	return requestsinlastmin
 }
 func (f *FileSystem) AddReqToCount(reqSecond int) {
 	data := f.GetAllReqs()

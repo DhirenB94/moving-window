@@ -82,6 +82,29 @@ func TestFileServer(t *testing.T) {
 
 		assertEqual(t, storeCurrentSecond, currentSecond)
 	})
+	t.Run("get correct request count for the last miniute", func(t *testing.T) {
+		currentSecond := int(time.Now().Unix())
+		thirtySecondsAgo := currentSecond - 30
+		sixtySecondsAgo := currentSecond - 60
+		ninetySecondsAgo := currentSecond - 90
+
+		tempFile := createTempFile(t, "")
+		defer closeTempFile(tempFile)
+
+		store := movingwindow.NewFileSystem(tempFile)
+
+		//add entires
+		store.AddReqToCount(currentSecond)
+		store.AddReqToCount(thirtySecondsAgo)
+		store.AddReqToCount(sixtySecondsAgo)
+		store.AddReqToCount(ninetySecondsAgo)
+
+		//get the reqs in the last minute only, not including the current request
+		got := store.GetReqsInLastMin(currentSecond)
+		want := 2
+
+		assertEqual(t, got, want)
+	})
 }
 
 func assertData(t testing.TB, got, want []movingwindow.Data) {
