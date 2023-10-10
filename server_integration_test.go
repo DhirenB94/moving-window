@@ -4,12 +4,16 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	movingwindow "dhiren.brahmbhatt/moving-window"
 )
 
 func TestRetrieveRequestCountAndAddCurrentRequest(t *testing.T) {
-	store := movingwindow.NewInMemDB()
+	tempFile := createTempFile(t, "")
+	defer closeTempFile(tempFile)
+
+	store := movingwindow.NewFileSystem(tempFile)
 
 	server := movingwindow.NewRequestServer(store)
 
@@ -21,11 +25,13 @@ func TestRetrieveRequestCountAndAddCurrentRequest(t *testing.T) {
 	assertEqual(t, got.RequestsInLastMin, 0)
 	assertStatus(t, response.Code, http.StatusOK)
 
+	time.Sleep(1 * time.Second)
 	server.ServeHTTP(response, request)
 	got2 := getReqsInLastMinFromResponse(t, response.Body)
 	assertEqual(t, got2.RequestsInLastMin, 1)
 	assertStatus(t, response.Code, http.StatusOK)
 
+	time.Sleep(1 * time.Second)
 	server.ServeHTTP(response, request)
 	got3 := getReqsInLastMinFromResponse(t, response.Body)
 	assertEqual(t, got3.RequestsInLastMin, 2)
